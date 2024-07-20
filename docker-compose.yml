@@ -1,0 +1,43 @@
+version: "3.8"
+
+services:
+  nginx:
+    container_name: portfolio_nginx
+    build: nginx
+    restart: always
+    volumes:
+      - ./nginx/nginx.conf:/etc/nginx/nginx.conf
+      - ./Laravel_api:/var/www/html
+    ports:
+      - "8081:80"
+    depends_on:
+      - phpfpm
+    networks:
+      - internal
+
+  phpfpm:
+    container_name: php
+    image: "bitnami/php-fpm:latest"
+    volumes:
+      - ./Laravel_api:/var/www/html
+    working_dir: /var/www/html
+    networks:
+      - internal
+
+  node:
+    container_name: frontend
+    image: node:latest
+    ports:
+      - "3000:3000"
+    volumes:
+      - ./portfolio_app:/var/www/html
+    working_dir: /var/www/html
+    environment:
+      WATCHPACK_POLLING: true
+    command: /bin/sh -c "npm install && npm run dev"
+    networks:
+      - internal
+
+networks:
+  internal:
+    driver: bridge
